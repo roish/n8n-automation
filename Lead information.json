@@ -1,0 +1,251 @@
+{
+  "name": "Lead information",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-info",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8baaf03c-2bc2-47b3-bf16-0a104dbb3623",
+      "name": "Webhook",
+      "webhookId": "af621a0f-2690-4f98-9e63-971d04c83b46"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d3ac4e8d-7303-4212-a8cf-fe52193a95a4",
+              "name": "name",
+              "value": "={{ $json.body.name  }}",
+              "type": "string"
+            },
+            {
+              "id": "adae441d-6246-42e5-92e6-201063e4b434",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "ef4c3fed-9353-48aa-a09a-0671616472e3",
+              "name": "budget",
+              "value": "={{ $json.body.budget }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "6209667a-a962-4f7d-b971-c87ea351e7fa",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0bb77c4b-77ad-4f00-be6a-fa6f8dbe7673",
+              "leftValue": "={{ $json.budget }}",
+              "rightValue": 5000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b585377b-a534-4a28-9f50-a5cb50bbc137",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jsonplaceholder.typicode.com/posts",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"lead_name\": \"{{ $json.name }}\", \"lead_email\": \"{{ $json.email }}\", \"status\": \"{{ $json.status }}\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "9eb39677-e120-44ce-a112-673b8d1f789b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1980101c-b658-4a30-ad32-bb1a703740ec",
+              "name": "status",
+              "value": "Not Qualified - Nurture Sequence",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        96
+      ],
+      "id": "d2b0feb4-a048-4766-8454-93f0dbd0ad22",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jsonplaceholder.typicode.com/posts",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"lead_name\": \"{{ $json.name }}\", \"lead_email\": \"{{ $json.email }}\", \"status\": \"{{ $json.status }}\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        96
+      ],
+      "id": "aa1b87be-e8be-4195-9cdd-e7665dd8db61",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f62f6ccc-8180-44a4-910a-1d8b26366c3e",
+              "name": "status",
+              "value": "Qualified — Priority Lead",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "9887ff5b-ffc6-4ed7-b83d-5d8a48ca510b",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0e48b314-208a-415d-b3c2-8292bb8a2d90",
+  "meta": {
+    "instanceId": "94528f7cf49c88d940542c10fad6049c543b65feb549cfa2a844966fdc4bfdc2"
+  },
+  "nodeGroups": [],
+  "id": "npGsvLyJW2IyN2fv",
+  "tags": []
+}

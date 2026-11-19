@@ -1,0 +1,286 @@
+{
+  "name": "customer inquiry+google sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-sheets",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "136a5466-9a43-42b4-86db-45c11b7435a3",
+      "name": "Webhook",
+      "webhookId": "0d8193ee-ed85-4f6c-b614-0826cf2c18bf"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "07bb4ba4-abf5-4b8d-9bee-0417b49e819e",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        208,
+        0
+      ],
+      "id": "54a6beb5-ee96-4f21-a03a-10f48bb4ccad",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_API_KEY_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"contents\": [{ \"parts\": [{ \"text\": \"Analyze this customer message and return ONLY raw JSON with these exact keys: category (one of: pricing, order_tracking, returns, other), urgency (one of: low, medium, high), buying_intent (one of: low, medium, high). No markdown, no extra text. Message: {{ $json.message }}\" }] }] }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        432,
+        0
+      ],
+      "id": "919d40f4-0e02-4a8a-9c71-cf37aac6b222",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bafb97da-9219-4b61-a23d-5265c9f1677f",
+              "name": "analysis",
+              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text) }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        656,
+        0
+      ],
+      "id": "690ee29e-1ca1-4555-aa8c-a04a8fcdc5f4",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f430490-e180-4b4c-8cf7-3b5505fdccfd",
+              "name": "message",
+              "value": "={{ $('Edit Fields').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "4bd8f06a-9379-4cea-8df8-f7f60838bdeb",
+              "name": "category",
+              "value": "={{ $json.analysis.category }}",
+              "type": "string"
+            },
+            {
+              "id": "6eed9d6a-3304-4d44-99c2-ba84f9a00ae1",
+              "name": "urgency",
+              "value": "={{ $json.analysis.urgency }}",
+              "type": "string"
+            },
+            {
+              "id": "43442c5f-c274-447e-ac64-f0a941e9989c",
+              "name": "buying_intent",
+              "value": "={{ $json.analysis.buying_intent }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        880,
+        0
+      ],
+      "id": "0dadeefa-e49f-40eb-a64e-9ac47ee860bb",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XOKhUQzrF1lA8Bmwe2J4K5dzOY6tILn5CEsJlOSo8_s",
+          "mode": "list",
+          "cachedResultName": "Inquiries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOKhUQzrF1lA8Bmwe2J4K5dzOY6tILn5CEsJlOSo8_s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOKhUQzrF1lA8Bmwe2J4K5dzOY6tILn5CEsJlOSo8_s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Urgency": "={{ $json.urgency }}",
+            "Buying Intent": "={{ $json.buying_intent }}",
+            "Category": "={{ $json.category }}",
+            "Message": "={{ $json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Buying Intent",
+              "displayName": "Buying Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "62bd0676-b80b-47e2-aa03-cd4d353c5d53",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "m6DikBdHPP89JlE7",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "aab10d65-e314-4f0e-8444-cf020a7f1e4e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "94528f7cf49c88d940542c10fad6049c543b65feb549cfa2a844966fdc4bfdc2"
+  },
+  "nodeGroups": [],
+  "id": "dhrpLm4FGz3mKa1G",
+  "tags": []
+}

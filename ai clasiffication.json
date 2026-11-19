@@ -1,0 +1,185 @@
+{
+  "name": "ai clasiffication",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "extract-info",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "52b6004f-9549-4f85-86ec-7501a7b5cc74",
+      "name": "Webhook",
+      "webhookId": "ebde653b-f788-4306-9a02-d25bf84da06f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd70d479-d85b-47b5-b0aa-d12758dabb43",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "e51db543-7bf1-4339-9b80-c5066a777af4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_KEY_VAULE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"contents\": [{ \"parts\": [{ \"text\": \"Extract the following fields from this customer message: name, product, quantity, budget. Respond with ONLY valid JSON in this exact shape, no extra text, no markdown formatting: {\\\"name\\\": \\\"\\\", \\\"product\\\": \\\"\\\", \\\"quantity\\\": 0, \\\"budget\\\": 0}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b07fa77a-95c3-4278-b9c9-7caaceab03f8",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6b9f6fcf-de76-4487-a5b0-ec14c338062b",
+              "name": "extracted",
+              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text) }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "f32fb04c-cbbc-43da-93f3-27b0c389c8a1",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "62217a23-dccf-405d-89b1-a28085b19727",
+              "name": "name",
+              "value": "={{ $json.extracted.name  }}",
+              "type": "string"
+            },
+            {
+              "id": "79e412ef-43a7-4d8e-8b57-839dd5590899",
+              "name": "product",
+              "value": "={{ $json.extracted.product  }}",
+              "type": "string"
+            },
+            {
+              "id": "41962e7e-0d5f-4038-be24-a1399311c29f",
+              "name": "quantity",
+              "value": null,
+              "type": "number"
+            },
+            {
+              "id": "371d9131-2ab1-424e-8dff-af457b486409",
+              "name": "budget",
+              "value": "={{ $json.extracted.budget }} ",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        896,
+        0
+      ],
+      "id": "4169f020-c467-4e33-bdfb-3b0adcbe9e4b",
+      "name": "Edit Fields2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c1289e50-47e2-4bd3-ad3e-b9d086e33634",
+  "meta": {
+    "instanceId": "94528f7cf49c88d940542c10fad6049c543b65feb549cfa2a844966fdc4bfdc2"
+  },
+  "nodeGroups": [],
+  "id": "Tq109dXaRiKWdBqC",
+  "tags": []
+}

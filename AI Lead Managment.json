@@ -1,0 +1,517 @@
+{
+  "name": "AI Lead Managment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-lead-management",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8227a14c-04a6-4990-a860-82b3cfc93e2c",
+      "name": "Webhook: Receove Lead",
+      "webhookId": "8f6d62f9-5bdb-4938-86cd-d7088675abcd"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d1dc023-2876-4ae8-a8c0-4fc28971dc4d",
+              "name": "name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "845e9011-1b2d-45b2-800b-1fb6ed3c592e",
+              "name": "contact",
+              "value": "={{ $json.body.contact }}",
+              "type": "string"
+            },
+            {
+              "id": "17836957-f089-4644-984e-4f1770a544c7",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7a98922a-8a84-4027-9bd9-e0259b6f4597",
+      "name": "Extract Lead Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6b5cd220-29c3-4c56-b23d-c32dd56c2fc6",
+              "leftValue": "={{ $json.contact }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "bd3c49f3-53e5-4fbc-96ba-a92eb5e4a620",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "ef8e41b0-ac58-4764-b936-846f454d5c3f",
+      "name": "Validate Lead Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1e3741f7-3821-472b-9431-e5ce5a7275bc",
+              "name": "error",
+              "value": "Rejected: missing contact and message",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        96
+      ],
+      "id": "45564292-4920-4b8a-bb6a-25346d384c54",
+      "name": "validation error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f928bab1-5269-463e-9748-147295df043d",
+              "name": "analysis",
+              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text) }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "38cc5a15-b723-4cab-974c-1061a8134027",
+      "name": "json data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_API_KEY_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"contents\": [{ \"parts\": [{ \"text\": \"Analyze this lead message. Return ONLY raw JSON with keys: category (pricing, order_tracking, returns, other), intent (browsing, comparing, ready_to_buy), priority (low, medium, high). Message: {{ $json.message }}\" }] }] }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "8cdeff0a-4fd7-457b-b2a9-4f130e215405",
+      "name": "AI: Analyze Lead"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "314122cb-2f8b-4b3c-a283-eeebaf240e83",
+              "name": "name",
+              "value": "={{ $('Extract Lead Data').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "63d5a6d4-d578-42eb-950d-bb023e705b45",
+              "name": "contact",
+              "value": "={{ $('Extract Lead Data').item.json.contact }}",
+              "type": "string"
+            },
+            {
+              "id": "f8942d7a-9e21-46c5-ad88-499564a092ed",
+              "name": "message",
+              "value": "={{ $('Extract Lead Data').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "9b93e5ce-11b5-43fb-895a-58ddd83221a6",
+              "name": "category",
+              "value": "={{ $json.analysis.category }}",
+              "type": "string"
+            },
+            {
+              "id": "ca174b93-510f-4097-b36d-cc03ebc9e780",
+              "name": "intent",
+              "value": "={{ $json.analysis.intent }}",
+              "type": "string"
+            },
+            {
+              "id": "efd324b0-e2d4-4dac-9010-d90368618c9d",
+              "name": "priority",
+              "value": "={{ $json.analysis.priority }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "097972cb-dd80-4ef3-9762-47c7d685c354",
+      "name": "Combine Full Record"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1TYfGoVul_4qPB7Vq2_2cAYdB9KvYe0AFAnYRFf_InSU",
+          "mode": "list",
+          "cachedResultName": "Lead Management",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TYfGoVul_4qPB7Vq2_2cAYdB9KvYe0AFAnYRFf_InSU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TYfGoVul_4qPB7Vq2_2cAYdB9KvYe0AFAnYRFf_InSU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Contact": "={{ $json.contact }}",
+            "Message": "={{ $json.message }}",
+            "Category": "={{ $json.category }}",
+            "Intent": "={{ $json.intent }}",
+            "Priority": "={{ $json.priority }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Contact",
+              "displayName": "Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        -96
+      ],
+      "id": "8217d07c-10e4-4a8f-9703-466b0e399b22",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "m6DikBdHPP89JlE7",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_API_KEY_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"contents\": [{ \"parts\": [{ \"text\": \"Write a short, warm suggested reply (under 4 sentences) for this {{ $json.priority }}-priority, {{ $json.category }} inquiry. Don't invent specific facts. Message: {{ $json.message }}\" }] }] }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1568,
+        -96
+      ],
+      "id": "f1443651-b447-493d-a2b7-2413c2eb4dca",
+      "name": "Ai: Draft Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "95726da5-ce7c-40f0-b292-53c37a94b8b0",
+              "name": "suggested_response",
+              "value": "={{ $json.candidates[0].content.parts[0].text.trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1792,
+        -96
+      ],
+      "id": "7ed7f4ae-dbe7-4641-a11e-d4abeab06212",
+      "name": "Extract Draft"
+    },
+    {
+      "parameters": {
+        "sendTo": "roishaaamaharjan@gmail.com",
+        "subject": "=New {{ $('Combine Full Record').item.json.priority }} priority lead: {{ $('Combine Full Record').item.json.name }}",
+        "message": "=Category: {{ $('Combine Full Record').item.json.category }} Message: {{ $('Combine Full Record').item.json.message }}  Suggested reply: {{ $json.suggested_response }}  (This is a draft — review before sending to any real customer.)",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        -96
+      ],
+      "id": "7612f087-8601-47d1-8e35-00d907c89d75",
+      "name": "Notify Team",
+      "webhookId": "2286eeeb-23b1-4d07-be37-930483ccaede",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MKhaqHL0MQ7P0sgT",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook: Receove Lead": {
+      "main": [
+        [
+          {
+            "node": "Extract Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Lead Data": {
+      "main": [
+        [
+          {
+            "node": "AI: Analyze Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "validation error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Analyze Lead": {
+      "main": [
+        [
+          {
+            "node": "json data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "json data": {
+      "main": [
+        [
+          {
+            "node": "Combine Full Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Full Record": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Ai: Draft Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ai: Draft Response": {
+      "main": [
+        [
+          {
+            "node": "Extract Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Draft": {
+      "main": [
+        [
+          {
+            "node": "Notify Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "i5wAWWrSGCwYpZM0",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "3c4f56fa-1700-40ea-9499-c686ff3580e1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "94528f7cf49c88d940542c10fad6049c543b65feb549cfa2a844966fdc4bfdc2"
+  },
+  "nodeGroups": [],
+  "id": "N4E7EZBl0xcBQXNi",
+  "tags": []
+}

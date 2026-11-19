@@ -1,0 +1,254 @@
+{
+  "name": "customer inqury classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inquiry-classifier",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a2127e4d-3659-4efb-8a71-cc01d8980d07",
+      "name": "Webhook",
+      "webhookId": "0b7fcb65-e7b5-416a-b9d5-e3ff9bcf6d64"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6e5c82d4-fa22-4caf-ae6c-7ce70d6040ec",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "326226ce-fa5f-40e6-a695-cef06be81c5b",
+      "name": "Extract Message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_API_KEY_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "= { \"contents\": [{ \"parts\": [{ \"text\": \"Classify this customer message into exactly one category: pricing, order_tracking, returns, or other. Respond with ONLY the category word. Message: {{ $json.message }}\" }] }] }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "bf96f7b4-2d69-480b-a71b-a5d556166c6f",
+      "name": "AI: classifies message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fb6e5c18-557b-4b0a-9b71-83b787ed7fe0",
+              "name": "message",
+              "value": "={{ $('Extract Message').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "a8b732f1-6967-4f2e-b51e-022f66ac0295",
+              "name": "category",
+              "value": "={{ $json.candidates[0].content.parts[0].text.trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        608,
+        0
+      ],
+      "id": "335ad823-a9d3-41d5-a27d-9d2157620f98",
+      "name": "Extract Category"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_API_KEY_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "= { \"contents\": [{ \"parts\": [{ \"text\": \"You are a customer support assistant. This message was classified as '{{ $json.category }}'. Write a short, warm, professional suggested reply (under 4 sentences). Do not invent specific facts like order numbers or prices — say a team member will confirm details if needed. Respond with ONLY the reply text. Customer message: {{ $json.message }}\" }] }] }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        832,
+        0
+      ],
+      "id": "c9e57bc9-2d2f-4486-b33c-5c65df5deea7",
+      "name": "Ai: Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2bec2c43-65ea-4d57-9d00-1d6866ed8364",
+              "name": "message",
+              "value": "={{ $('Extract Category').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "8d321f17-c4de-4ca7-8c44-9ee3fb06957a",
+              "name": "category",
+              "value": "={{ $('Extract Category').item.json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "286af5bb-478d-4a8d-8801-512cd2e79305",
+              "name": "suggested_response",
+              "value": "={{ $json.candidates[0].content.parts[0].text.trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "96620403-dbe7-426c-9f28-85b510b8f1a1",
+      "name": "Extract Combined Result"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jsonplaceholder.typicode.com/posts",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"title\": \"Customer inquiry\", \"category\": \"{{ $json.category }}\", \"message\": \"{{ $json.message }}\", \"suggested_response\": \"{{ $json.suggested_response }}\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "d3812a09-5223-45ff-b256-8ccf70a74170",
+      "name": "Save to Database"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -176
+      ],
+      "id": "6e860950-172a-41d7-8772-0c6cc8d95c2f",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Message": {
+      "main": [
+        [
+          {
+            "node": "AI: classifies message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: classifies message": {
+      "main": [
+        [
+          {
+            "node": "Extract Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Category": {
+      "main": [
+        [
+          {
+            "node": "Ai: Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ai: Response": {
+      "main": [
+        [
+          {
+            "node": "Extract Combined Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Combined Result": {
+      "main": [
+        [
+          {
+            "node": "Save to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "cc4e2513-b824-4ea2-adc1-db955bdc52b6",
+  "meta": {
+    "instanceId": "94528f7cf49c88d940542c10fad6049c543b65feb549cfa2a844966fdc4bfdc2"
+  },
+  "nodeGroups": [],
+  "id": "DYRZbGZ5zWu6FLaT",
+  "tags": []
+}
